@@ -368,7 +368,7 @@ function Hero() {
                 gap: 12, marginBottom: "2rem",
               }}>
                 <span style={{ width: 28, height: 1, background: "var(--acid)", flexShrink: 0, display: "block" }} />
-                CATALISE.ME · IMPLANTAÇÃO DE AGENTES DE IA & AUTOMAÇÕES
+                CATALISE.ME · SISTEMA OPERACIONAL DE PROCESSOS & IA
               </div>
             </FadeUp>
             <FadeUp delay={0.08}>
@@ -382,7 +382,7 @@ function Hero() {
             </FadeUp>
             <FadeUp delay={0.14}>
               <p style={{ fontFamily: "var(--app-font-sans)", fontSize: "clamp(0.95rem,1.6vw,1.1rem)", color: "var(--text-2)", lineHeight: 1.7, marginBottom: "2rem", maxWidth: "54ch" }}>
-                Sua operação cresceu até onde dava sozinha. O <strong style={{ color: "var(--text)" }}>Opera OS</strong> é a infraestrutura definitiva de <strong style={{ color: "var(--acid)" }}>Agentes de IA e Automação</strong> para empresas. Conectamos WhatsApp, CRM, marketing e atendimento em um único ecossistema inteligente de agentes autônomos que operam 24/7.
+                Sua operação cresceu até onde dava sozinha. O <strong style={{ color: "var(--text)" }}>Opera OS</strong> é o sistema operacional definitivo que integra os seus processos com IA. Conectamos CRM, automações e agentes de atendimento em um único ecossistema unificado para acelerar seu negócio.
               </p>
             </FadeUp>
             <FadeUp delay={0.2}>
@@ -391,9 +391,8 @@ function Hero() {
                 <BtnGhost href="#fases">Ver o método</BtnGhost>
               </div>
               <p style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.56rem", letterSpacing: "0.1em", color: "var(--border-md)" }}>
-                Timeline: <em style={{ color: "var(--acid)", fontStyle: "normal" }}>10–12 semanas</em> · Inclui{" "}
-                <em style={{ color: "var(--acid)", fontStyle: "normal" }}>Agentes de IA WhatsApp</em> e{" "}
-                <em style={{ color: "var(--acid)", fontStyle: "normal" }}>CRM agêntico</em>
+                Timeline: <em style={{ color: "var(--acid)", fontStyle: "normal" }}>10–12 semanas</em> · Integra{" "}
+                <em style={{ color: "var(--acid)", fontStyle: "normal" }}>CRM comercial</em>, <em style={{ color: "var(--acid)", fontStyle: "normal" }}>automações</em> e <em style={{ color: "var(--acid)", fontStyle: "normal" }}>IA</em>
               </p>
             </FadeUp>
           </div>
@@ -492,12 +491,12 @@ function OQueE() {
             </FadeUp>
             <FadeUp delay={0.08}>
               <h2 style={{ fontFamily: "var(--app-font-sans)", fontWeight: 800, fontSize: "clamp(1.8rem,3.2vw,2.8rem)", lineHeight: 1.1, marginBottom: "1.5rem", letterSpacing: "-0.025em" }}>
-                Especialistas em<br />desenvolvimento de<br /><em style={{ color: "var(--acid)", fontStyle: "normal" }}>Agentes de IA</em>
+                Uma infraestrutura<br />que integra e<br /><em style={{ color: "var(--acid)", fontStyle: "normal" }}>acelera</em> sua operação
               </h2>
             </FadeUp>
             <FadeUp delay={0.14}>
               <p style={{ fontSize: "0.92rem", color: "var(--text-3)", lineHeight: 1.85, marginBottom: "1rem", maxWidth: "50ch" }}>
-                O OPERA OS é o sistema operacional com IA da Catalise.me. Em 10 a 12 semanas, instalamos a infraestrutura completa de inteligência artificial no seu negócio — passando por diagnóstico, planejamento, arquitetura, implantação e afinação de agentes inteligentes autônomos.
+                O OPERA OS é o sistema operacional com IA da Catalise.me. Em 10 a 12 semanas, instalamos a infraestrutura operacional completa no seu negócio — passando por diagnóstico, planejamento, CRM comercial, automações de processos, presença digital e agentes inteligentes de atendimento.
               </p>
               <p style={{ fontSize: "0.92rem", color: "var(--text-3)", lineHeight: 1.85, marginBottom: "1.5rem", maxWidth: "50ch" }}>
                 <strong style={{ color: "var(--text-2)", fontWeight: 500 }}>O que entregamos não são ferramentas soltas.</strong> É um ecossistema integrado onde cada peça conversa com as outras — o agente de IA que atende pelo WhatsApp alimenta o CRM que orienta o time de vendas que reporta no dashboard que informa as decisões do gestor.
