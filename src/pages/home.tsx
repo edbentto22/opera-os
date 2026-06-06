@@ -324,7 +324,7 @@ function Nav() {
         transition: "all 0.3s ease",
       }}>
         <a href="#" aria-label="Catalise.me">
-          <img src="/logo-catalise-me.svg" alt="Catalise.me" style={{ height: 32, width: "auto", display: "block" }} />
+          <img src="/logo-catalise-me.svg" alt="Catalise.me" style={{ height: 46, width: "auto", display: "block" }} />
         </a>
         <div className="nav-links" style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
           {(["O Método", "Entregáveis", "Investimento"] as const).map((label, i) => (
