@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, createContext, useContext } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 
 const WHATSAPP_URL = "https://wa.me/5575991879786?text=Quero%20meu%20diagn%C3%B3stico%20gratuito%20OPERA%20OS";
 
@@ -125,7 +125,7 @@ function DiagnosticoModal({ onClose }: { onClose: () => void }) {
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="form-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div>
                   <label style={labelStyle}>Nome *</label>
                   <input required value={form.nome} onChange={set("nome")} placeholder="Seu nome" style={inputStyle}
@@ -199,17 +199,101 @@ function DiagnosticoModal({ onClose }: { onClose: () => void }) {
 
 function FadeUp({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-50px" });
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 28 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
       {children}
     </motion.div>
+  );
+}
+
+/** Reveals a heading word-by-word, staggered — inspired by Imperial Ebolgheri's title reveals */
+function WordReveal({ text, className = "", style = {}, delay = 0 }: {
+  text: string; className?: string; style?: React.CSSProperties; delay?: number;
+}) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const words = text.split(" ");
+  return (
+    <span ref={ref} className={className} style={{ display: "block", overflow: "hidden", ...style }}>
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          style={{ display: "inline-block", marginRight: "0.3em" }}
+          initial={{ y: "110%", opacity: 0 }}
+          animate={inView ? { y: "0%", opacity: 1 } : {}}
+          transition={{ duration: 0.7, delay: delay + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+/** Magnetic cursor — follows mouse with spring physics */
+function MagneticCursor() {
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+  const dotX = useSpring(cursorX, { stiffness: 900, damping: 50 });
+  const dotY = useSpring(cursorY, { stiffness: 900, damping: 50 });
+  const ringX = useSpring(cursorX, { stiffness: 120, damping: 22 });
+  const ringY = useSpring(cursorY, { stiffness: 120, damping: 22 });
+  const [hoveringCta, setHoveringCta] = useState(false);
+
+  useEffect(() => {
+    const move = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+    };
+    const onEnter = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      setHoveringCta(!!(t.closest("button") || t.closest("a")));
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseover", onEnter);
+    return () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseover", onEnter);
+    };
+  }, [cursorX, cursorY]);
+
+  return (
+    <>
+      {/* Dot */}
+      <motion.div
+        style={{
+          position: "fixed", top: 0, left: 0, zIndex: 9999,
+          pointerEvents: "none",
+          x: dotX, y: dotY,
+          translateX: "-50%", translateY: "-50%",
+          width: hoveringCta ? 8 : 6, height: hoveringCta ? 8 : 6,
+          background: "var(--acid)",
+          borderRadius: "50%",
+          transition: "width 0.2s, height 0.2s",
+        }}
+      />
+      {/* Ring */}
+      <motion.div
+        style={{
+          position: "fixed", top: 0, left: 0, zIndex: 9998,
+          pointerEvents: "none",
+          x: ringX, y: ringY,
+          translateX: "-50%", translateY: "-50%",
+          width: hoveringCta ? 44 : 28, height: hoveringCta ? 44 : 28,
+          border: "1.5px solid var(--acid)",
+          borderRadius: "50%",
+          opacity: hoveringCta ? 0.7 : 0.35,
+          transition: "width 0.3s, height 0.3s, opacity 0.3s",
+        }}
+      />
+    </>
   );
 }
 
@@ -240,20 +324,12 @@ function Nav() {
         transition: "all 0.3s ease",
       }}>
         <a href="#" aria-label="Catalise.me">
-          <img src="/logo.png" alt="Catalise.me" style={{ height: 48, width: "auto" }}
-            onError={(e) => {
-              const t = e.currentTarget as HTMLImageElement;
-              t.style.display = "none";
-              (t.nextSibling as HTMLElement).style.display = "block";
-            }}
-          />
-          <span style={{ display: "none", fontWeight: 800, fontSize: "0.85rem", letterSpacing: "-0.01em" }}>
-            CATALISE<em style={{ color: "var(--acid)", fontStyle: "normal" }}>.ME</em>
-          </span>
+          <img src="/logo-catalise-me.svg" alt="Catalise.me" style={{ height: 32, width: "auto", display: "block" }} />
         </a>
-        <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
+        <div className="nav-links" style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
           {(["O Método", "Entregáveis", "Investimento"] as const).map((label, i) => (
             <a key={i} href={["#fases", "#entregaveis", "#investimento"][i]}
+              className="nav-link-item"
               style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-3)", transition: "color 0.12s ease" }}
               onMouseEnter={e => (e.currentTarget.style.color = "var(--acid)")}
               onMouseLeave={e => (e.currentTarget.style.color = "var(--text-3)")}
@@ -306,15 +382,13 @@ function OperaRow({ letter, word, desc, tag }: { letter: string; word: string; d
       style={{
         display: "flex", alignItems: "center", gap: 16,
         padding: "clamp(12px,2vw,18px) clamp(14px,2.5vw,22px)",
-        background: hovered ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.4)",
-        backdropFilter: "blur(16px)",
-        border: `1px solid ${hovered ? "var(--acid)" : "rgba(0,0,0,0.06)"}`,
-        borderRadius: 16,
+        background: hovered ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.5)",
+        border: `1px solid ${hovered ? "var(--acid)" : "rgba(0,0,0,0.08)"}`,
         boxShadow: hovered
-          ? "inset 0 1px 0 rgba(107,158,17,0.2), 0 10px 40px -10px rgba(0,0,0,0.12)"
-          : "inset 0 1px 0 rgba(0,0,0,0.03), 0 10px 40px -10px rgba(0,0,0,0.08)",
-        transform: hovered ? "translateX(4px) translateY(-2px)" : "none",
-        transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
+          ? "inset 0 1px 0 rgba(107,158,17,0.15), 0 8px 32px -8px rgba(0,0,0,0.12)"
+          : "inset 0 1px 0 rgba(0,0,0,0.03), 0 4px 16px -4px rgba(0,0,0,0.06)",
+        transform: hovered ? "translateX(6px) translateY(-1px)" : "none",
+        transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)",
         cursor: "default",
       }}
     >
@@ -339,14 +413,24 @@ function OperaRow({ letter, word, desc, tag }: { letter: string; word: string; d
 
 function Hero() {
   const { open } = useModal();
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const videoY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+
   return (
-    <section id="hero" style={{
+    <section ref={heroRef} id="hero" style={{
       minHeight: "100dvh", display: "flex", alignItems: "center",
       background: "var(--base)", overflow: "hidden", paddingTop: 75, position: "relative",
     }}>
-      <video src="/hero-bg.mp4" autoPlay loop muted playsInline
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0, opacity: 0.75, pointerEvents: "none" }}
-      />
+      {/* Parallax video layer */}
+      <motion.div style={{ position: "absolute", inset: 0, zIndex: 0, y: videoY }}>
+        <video src="/hero-bg.mp4" autoPlay loop muted playsInline
+          style={{ width: "100%", height: "115%", objectFit: "cover", opacity: 0.75, pointerEvents: "none" }}
+        />
+      </motion.div>
+
       <div style={{
         position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
         background: "linear-gradient(to right, var(--base) 0%, rgba(245,246,245,0.85) 40%, rgba(245,246,245,0.2) 100%)",
@@ -357,7 +441,8 @@ function Hero() {
         backgroundSize: "64px 64px", animation: "gridDrift 30s linear infinite",
       }} />
 
-      <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 800, margin: "0 auto", padding: "clamp(2rem,4vw,4rem) clamp(1rem,3vw,3rem)" }}>
+      {/* Content with subtle parallax upward */}
+      <motion.div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 800, margin: "0 auto", padding: "clamp(2rem,4vw,4rem) clamp(1rem,3vw,3rem)", y: contentY, opacity }}>
         <div>
           <div>
             <FadeUp>
@@ -367,25 +452,44 @@ function Hero() {
                 color: "var(--acid)", display: "flex", alignItems: "center",
                 gap: 12, marginBottom: "2rem",
               }}>
-                <span style={{ width: 28, height: 1, background: "var(--acid)", flexShrink: 0, display: "block" }} />
+                <motion.span
+                  initial={{ scaleX: 0, originX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ width: 28, height: 1, background: "var(--acid)", flexShrink: 0, display: "block" }}
+                />
                 CATALISE.ME · SISTEMA OPERACIONAL DE PROCESSOS & IA
               </div>
             </FadeUp>
-            <FadeUp delay={0.08}>
-              <h1 style={{
-                fontFamily: "var(--app-font-sans)", fontWeight: 800,
-                fontSize: "clamp(2.8rem,6vw,5.8rem)", lineHeight: 1, letterSpacing: "-0.03em",
-                color: "var(--text)", marginBottom: "1.8rem",
-              }}>
-                OPERA<br /><span style={{ color: "var(--acid)" }}>OS</span>
-              </h1>
-            </FadeUp>
-            <FadeUp delay={0.14}>
+
+            {/* Word-by-word title reveal wrapped in semantic h1 */}
+            <h1 style={{ marginBottom: "1.8rem", display: "block" }}>
+              <WordReveal
+                text="OPERA"
+                delay={0.1}
+                style={{
+                  fontFamily: "var(--app-font-sans)", fontWeight: 800,
+                  fontSize: "clamp(2.8rem,6vw,5.8rem)", lineHeight: 1.05, letterSpacing: "-0.03em",
+                  color: "var(--text)",
+                }}
+              />
+              <WordReveal
+                text="OS"
+                delay={0.18}
+                style={{
+                  fontFamily: "var(--app-font-sans)", fontWeight: 800,
+                  fontSize: "clamp(2.8rem,6vw,5.8rem)", lineHeight: 1.05, letterSpacing: "-0.03em",
+                  color: "var(--acid)",
+                }}
+              />
+            </h1>
+
+            <FadeUp delay={0.32}>
               <p style={{ fontFamily: "var(--app-font-sans)", fontSize: "clamp(0.95rem,1.6vw,1.1rem)", color: "var(--text-2)", lineHeight: 1.7, marginBottom: "2rem", maxWidth: "54ch" }}>
                 Sua operação cresceu até onde dava sozinha. O <strong style={{ color: "var(--text)" }}>Opera OS</strong> é o sistema operacional definitivo que integra os seus processos com IA. Conectamos CRM, automações e agentes de atendimento em um único ecossistema unificado para acelerar seu negócio.
               </p>
             </FadeUp>
-            <FadeUp delay={0.2}>
+            <FadeUp delay={0.42}>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
                 <BtnPrimary onClick={open}>Quero meu diagnóstico gratuito →</BtnPrimary>
                 <BtnGhost href="#fases">Ver o método</BtnGhost>
@@ -397,7 +501,7 @@ function Hero() {
             </FadeUp>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -428,11 +532,11 @@ function DorCard({ num, title, desc, stat }: { num: string; title: string; desc:
   const [hovered, setHovered] = useState(false);
   return (
     <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      style={{ background: hovered ? "var(--text)" : "var(--base)", padding: "1.5rem 1.2rem", transition: "background 0ms", cursor: "default", height: "100%" }}
+      style={{ background: hovered ? "var(--text)" : "var(--base)", padding: "1.5rem 1.2rem", transition: "background 0.18s ease", cursor: "default", height: "100%" }}
     >
-      <h3 style={{ fontFamily: "var(--app-font-mono)", fontWeight: 700, fontSize: "0.95rem", color: hovered ? "var(--base)" : "var(--text)", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.05em", transition: "color 0ms" }}>{title}</h3>
-      <p style={{ fontSize: "0.8rem", color: hovered ? "var(--base-2)" : "var(--text-2)", lineHeight: 1.6, fontFamily: "var(--app-font-mono)", transition: "color 0ms" }}>{desc}</p>
-      <div style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--ember)", marginTop: "1rem", paddingTop: "0.8rem", borderTop: `1px solid ${hovered ? "rgba(255,255,255,0.15)" : "var(--border-var)"}`, transition: "border-color 0ms" }}>{stat}</div>
+      <h3 style={{ fontFamily: "var(--app-font-mono)", fontWeight: 700, fontSize: "0.95rem", color: hovered ? "var(--base)" : "var(--text)", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.05em", transition: "color 0.18s ease" }}>{title}</h3>
+      <p style={{ fontSize: "0.8rem", color: hovered ? "var(--base-2)" : "var(--text-2)", lineHeight: 1.6, fontFamily: "var(--app-font-mono)", transition: "color 0.18s ease" }}>{desc}</p>
+      <div style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--ember)", marginTop: "1rem", paddingTop: "0.8rem", borderTop: `1px solid ${hovered ? "rgba(255,255,255,0.15)" : "var(--border-var)"}`, transition: "border-color 0.18s ease" }}>{stat}</div>
     </div>
   );
 }
@@ -448,7 +552,7 @@ function Problema() {
   return (
     <section id="problema" style={{ background: "var(--base-2)", borderTop: "1px solid var(--border-var)", padding: "clamp(3rem,6vw,6rem) clamp(1rem,3vw,3rem)" }}>
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", marginBottom: "4rem" }}>
+        <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", marginBottom: "4rem" }}>
           <FadeUp>
             <span style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: "1rem", display: "block" }}>// O diagnóstico real</span>
             <h2 style={{ fontFamily: "var(--app-font-sans)", fontWeight: 800, fontSize: "clamp(2.5rem,6vw,5rem)", lineHeight: 0.95, letterSpacing: "-0.03em", color: "var(--text)" }}>
@@ -484,7 +588,7 @@ function OQueE() {
       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(107,158,17,0.04) 0%, transparent 70%)", pointerEvents: "none", zIndex: 2 }} />
 
       <div style={{ position: "relative", zIndex: 3, maxWidth: 1400, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "start" }}>
+        <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "start" }}>
           <div>
             <FadeUp>
               <span style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: "1rem", display: "block" }}>// O que é o OPERA OS</span>
@@ -520,7 +624,13 @@ function OQueE() {
           </div>
 
           <FadeUp delay={0.2}>
-            <div style={{ background: "rgba(255,255,255,0.5)", backdropFilter: "blur(16px)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 16, padding: "2.5rem", position: "relative", overflow: "hidden", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4), 0 8px 32px rgba(0,0,0,0.06)" }}>
+            <div style={{
+              background: "var(--base-2)",
+              border: "1px solid var(--border-var)",
+              padding: "2.5rem",
+              position: "relative",
+              overflow: "hidden",
+            }}>
               <span style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--acid)", marginBottom: "1rem", display: "block" }}>* Sistema Operacional com IA</span>
               <div style={{ fontFamily: "var(--app-font-sans)", fontWeight: 800, fontSize: "clamp(1.8rem,3.5vw,2.8rem)", color: "var(--text)", lineHeight: 1, marginBottom: "1.2rem", letterSpacing: "-0.025em" }}>
                 OPERA<br /><span style={{ color: "var(--acid)" }}>OS</span>
@@ -562,6 +672,7 @@ function FaseRow({ letter, name, week, tagline, desc, items, entregavel, entrega
   return (
     <FadeUp delay={index * 0.07}>
       <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+        className="fase-row"
         style={{
           display: "grid", gridTemplateColumns: "100px 1fr 280px", gap: "3rem",
           padding: "2.5rem 0", borderBottom: "1px solid var(--border-var)",
@@ -739,7 +850,7 @@ function AnteDepois() {
           </h2>
         </FadeUp>
         <FadeUp delay={0.1}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 1fr", gap: 0 }}>
+          <div className="antedepois-grid" style={{ display: "grid", gridTemplateColumns: "1fr 60px 1fr", gap: 0 }}>
             <div>
               <div style={{ padding: "1.2rem 1.8rem", fontFamily: "var(--app-font-mono)", fontSize: "0.58rem", letterSpacing: "0.18em", textTransform: "uppercase", borderBottom: "2px solid var(--ember)", background: "var(--ember-pale)", color: "var(--ember)" }}>✗ Antes do OPERA OS</div>
               {rows.map(([antes], i) => (
@@ -786,7 +897,7 @@ function ParaQuem() {
         <FadeUp>
           <span style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: "2rem", display: "block" }}>// Fit do produto</span>
         </FadeUp>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem" }}>
+        <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem" }}>
           <FadeUp delay={0.08}>
             <h3 style={{ fontFamily: "var(--app-font-sans)", fontWeight: 900, fontSize: "clamp(1.6rem,3vw,2.5rem)", lineHeight: 0.95, marginBottom: "2.5rem", letterSpacing: "-0.02em", color: "var(--acid)" }}>O OPERA OS<br />é para você.</h3>
             <ul style={{ listStyle: "none" }}>
@@ -820,7 +931,7 @@ function Investimento() {
     <section id="investimento" style={{ background: "#0b0d0b", color: "var(--base)", overflow: "hidden", position: "relative", padding: "clamp(3rem,6vw,6rem) clamp(1rem,3vw,3rem)" }}>
       <div style={{ position: "absolute", right: "-2rem", top: "50%", transform: "translateY(-50%)", fontFamily: "var(--app-font-display)", fontSize: "clamp(8rem,16vw,20rem)", color: "rgba(255,255,255,0.02)", lineHeight: 1, pointerEvents: "none", whiteSpace: "nowrap", userSelect: "none" }}>OPERA OS</div>
       <div style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "start" }}>
+        <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "start" }}>
           <FadeUp>
             <span style={{ fontFamily: "var(--app-font-mono)", fontSize: "0.58rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "1rem", display: "block" }}>// Investimento</span>
             <h2 style={{ fontFamily: "var(--app-font-sans)", fontWeight: 800, fontSize: "clamp(1.6rem,3vw,2.8rem)", lineHeight: 1.1, color: "var(--base)", marginBottom: "1.5rem", letterSpacing: "-0.025em" }}>
@@ -929,7 +1040,7 @@ function FAQ() {
 
   return (
     <section id="faq" style={{ background: "var(--base)", borderTop: "1px solid var(--border-var)", padding: "clamp(3rem,6vw,6rem) clamp(1rem,3vw,3rem)" }}>
-      <div style={{ maxWidth: 1400, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: "4rem", alignItems: "start" }}>
+      <div className="faq-grid" style={{ maxWidth: 1400, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: "4rem", alignItems: "start" }}>
         <FadeUp>
           <h2 style={{ fontFamily: "var(--app-font-sans)", fontWeight: 800, fontSize: "clamp(2.2rem,5vw,4rem)", lineHeight: 0.95, letterSpacing: "-0.03em" }}>
             Dúvidas<br /><span style={{ color: "var(--acid)" }}>Frequentes.</span>
@@ -1040,7 +1151,15 @@ export default function Home() {
 
   return (
     <ModalCtx.Provider value={{ open: openModal }}>
-      <main>
+      {/* Magnetic cursor — only renders on pointer devices */}
+      <MagneticCursor />
+
+      {/* Page entrance fade */}
+      <motion.main
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <Nav />
         <Hero />
         <Marquee />
@@ -1055,7 +1174,7 @@ export default function Home() {
         <FAQ />
         <CtaFinal />
         <Footer />
-      </main>
+      </motion.main>
       <AnimatePresence>
         {modalOpen && <DiagnosticoModal onClose={closeModal} />}
       </AnimatePresence>

@@ -104,3 +104,144 @@
 
 .font-display { font-family: 'Bebas Neue', sans-serif; }
 .font-mono { font-family: 'Geist Mono', monospace; }
+
+/* ═══ Custom Magnetic Cursor (pointer devices only) ═══ */
+@media (pointer: fine) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
+/* ═══ Nav link hover underline slide ═══ */
+.nav-link-item {
+  position: relative;
+}
+.nav-link-item::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 100%; height: 1px;
+  background: var(--acid);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-link-item:hover::after { transform: scaleX(1); }
+
+/* ═══ Scroll-driven progress bar ═══ */
+@supports (animation-timeline: scroll()) {
+  html::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--acid);
+    transform-origin: left;
+    transform: scaleX(0);
+    z-index: 9999;
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes scroll-progress {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+}
+
+/* ═══ Section heading hover reveal (Imperial-style) ═══ */
+.section-heading-hover {
+  position: relative;
+  overflow: hidden;
+}
+.section-heading-hover span {
+  display: inline-block;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.section-heading-hover:hover span {
+  transform: translateY(-3px);
+}
+
+/* ═══ DorCard flip-in on hover ═══ */
+@keyframes cardReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+
+/* ═══ FaseRow number counter pulse ═══ */
+@keyframes countPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+
+/* ═══ Responsive — Tablet (≤ 900px) ═══ */
+@media (max-width: 900px) {
+  .fase-row {
+    grid-template-columns: 70px 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .fase-row > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .faq-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* ═══ Responsive — Mobile (≤ 768px) ═══ */
+@media (max-width: 768px) {
+
+  /* — Nav — */
+  .nav-link-item {
+    display: none !important;
+  }
+  .nav-links {
+    gap: 0.75rem !important;
+  }
+
+  /* — All 2-column grids → single column — */
+  .grid-2col {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  /* — FaseRow: fully stacked — */
+  .fase-row {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* — AnteDepois → stacked — */
+  .antedepois-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .antedepois-grid > div:nth-child(2) {
+    display: none !important;
+  }
+
+  /* — Modal form 2-col → single — */
+  .form-2col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* — FAQ — */
+  .faq-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* ═══ Responsive — Small mobile (≤ 480px) ═══ */
+@media (max-width: 480px) {
+  /* Reduce hero padding for very small screens */
+  #hero { padding-top: 75px !important; }
+
+  /* Tight section padding */
+  section {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Sticky bar simplification */
+  #sticky-bar > span { display: none; }
+}
